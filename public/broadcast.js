@@ -51,6 +51,8 @@ window.onunload = window.onbeforeunload = () => {
 const videoElement = document.querySelector("video");
 const audioSelect = document.querySelector("select#audioSource");
 const videoSelect = document.querySelector("select#videoSource");
+const screenshareSelect = document.querySelector("select#screenshare");
+
 
 audioSelect.onchange = getStream;
 videoSelect.onchange = getStream;
@@ -79,21 +81,47 @@ function gotDevices(deviceInfos) {
 }
 
 function getStream() {
-  if (window.stream) {
-    window.stream.getTracks().forEach(track => {
-      track.stop();
-    });
+  // if (window.stream) {
+  //   window.stream.getTracks().forEach(track => {
+  //     track.stop();
+  //   });
+  // }
+  // const audioSource = audioSelect.value;
+  // const videoSource = videoSelect.value;
+  // const constraints = {
+  //   audio: { deviceId: audioSource ? { exact: audioSource } : undefined },
+  //   video: { deviceId: videoSource ? { exact: videoSource } : undefined }
+  // };
+
+
+  if (navigator.getDisplayMedia) {
+    getDisplayMedia = navigator.getDisplayMedia.bind(navigator);
+  } else {
+    // @ts-ignore
+    getDisplayMedia = navigator.mediaDevices.getDisplayMedia.bind(navigator.mediaDevices);
   }
-  const audioSource = audioSelect.value;
-  const videoSource = videoSelect.value;
-  const constraints = {
-    audio: { deviceId: audioSource ? { exact: audioSource } : undefined },
-    video: { deviceId: videoSource ? { exact: videoSource } : undefined }
-  };
-  return navigator.mediaDevices
-    .getUserMedia(constraints)
-    .then(gotStream)
-    .catch(handleError);
+
+  return getDisplayMedia({ video:
+    {
+      width: {
+        ideal: 1920,
+        max: 1920,
+      },
+      height: {
+        ideal: 1080,
+        max: 1080
+      },
+      aspectRatio: 1.7777777777777777,
+      displaySurface: 'monitor',
+      logicalSurface: true,
+      cursor: 'always',
+      frameRate: {
+        ideal: 60,
+        max: 60
+      }
+    }
+  }).then(gotStream).catch(handleError);
+    
 }
 
 function gotStream(stream) {
